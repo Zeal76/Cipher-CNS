@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Green Cipher Tool</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0b3d0b, #1b5e20); /* blackish green */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 500px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      color: #e8f5e9;
+    }
+
+    h2 {
+      text-align: center;
+      color: #a5d6a7;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      color: #c8e6c9;
+    }
+
+    select, input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    select, input {
+      background: #1b5e20; /* input: dark green */
+      color: #fff;
+    }
+
+    textarea {
+      background: #33691e; /* output: lighter green */
+      color: #fff;
+      resize: vertical;
+    }
+
+    button {
+      background-color: #2e7d32;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #1b5e20;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-group button {
+      flex: 1;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 13px;
+      margin-top: 20px;
+      color: #81c784;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>🔐Green Cipher Tool🔐</h2>
+
+  <label for="cipher">Choose Cipher Type:</label>
+  <select id="cipher">
+    <option value="caesar">Caesar Cipher</option>
+    <option value="polyalphabetic">Polyalphabetic Cipher</option>
+    <option value="aes_rsa">AES + RSA Hybrid</option>
+  </select>
+
+  <label for="key">Enter Key or Keyword:</label>
+  <input type="text" id="key" placeholder="e.g. 3 or SECRET">
+
+  <label for="message">Message (Input or Output):</label>
+  <textarea id="message" rows="6" placeholder="Type your message here..."></textarea>
+
+  <div class="btn-group">
+    <button onclick="encryptMessage()">🔒 Encrypt</button>
+    <button onclick="decryptMessage()">🔓 Decrypt</button>
+  </div>
+
+  <footer>
+    Green Cipher Tool 🌿
+  </footer>
+</div>
+
+<script>
+  function caesarEncrypt(text, shift) {
+    shift = parseInt(shift) % 26;
+    return text.replace(/[a-z]/gi, c => {
+      const base = c >= 'a' ? 97 : 65;
+      return String.fromCharCode((c.charCodeAt(0) - base + shift + 26) % 26 + base);
+    });
+  }
+
+  function caesarDecrypt(text, shift) {
+    return caesarEncrypt(text, -parseInt(shift));
+  }
+
+  function polyEncrypt(text, keyword) {
+    keyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+    let result = '', j = 0;
+    for (let i = 0; i < text.length; i++) {
+      let c = text[i];
+      if (c.match(/[a-z]/i)) {
+        let keyChar = keyword[j % keyword.length];
+        let shift = keyChar.charCodeAt(0) - 65;
+        let base = c >= 'a' ? 97 : 65;
+        result += String.fromCharCode((c.charCodeAt(0) - base + shift) % 26 + base);
+        j++;
+      } else {
+        result += c;
+      }
+    }
+    return result;
+  }
+
+  function polyDecrypt(text, keyword) {
+    keyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+    let result = '', j = 0;
+    for (let i = 0; i < text.length; i++) {
+      let c = text[i];
+      if (c.match(/[a-z]/i)) {
+        let keyChar = keyword[j % keyword.length];
+        let shift = keyChar.charCodeAt(0) - 65;
+        let base = c >= 'a' ? 97 : 65;
+        result += String.fromCharCode((c.charCodeAt(0) - base - shift + 26) % 26 + base);
+        j++;
+      } else {
+        result += c;
+      }
+    }
+    return result;
+  }
+
+  function aesRsaEncrypt(text) {
+    return btoa(unescape(encodeURIComponent(text))); // fake encryption
+  }
+
+  function aesRsaDecrypt(ciphertext) {
+    try {
+      return decodeURIComponent(escape(atob(ciphertext))); // fake decryption
+    } catch (e) {
+      return "⚠️ Invalid AES+RSA cipher text!";
+    }
+  }
+
+  function encryptMessage() {
+    const cipher = document.getElementById("cipher").value;
+    const key = document.getElementById("key").value.trim();
+    const msg = document.getElementById("message").value;
+
+    let result = "";
+
+    if (cipher === "caesar") {
+      if (!key || isNaN(key)) return alert("Enter a number for Caesar Cipher.");
+      result = caesarEncrypt(msg, key);
+    } else if (cipher === "polyalphabetic") {
+      if (!key.match(/[a-zA-Z]+/)) return alert("Enter a word key for Polyalphabetic Cipher.");
+      result = polyEncrypt(msg, key);
+    } else if (cipher === "aes_rsa") {
+      result = aesRsaEncrypt(msg); // simulated
+    }
+
+    document.getElementById("message").value = result;
+  }
+
+  function decryptMessage() {
+    const cipher = document.getElementById("cipher").value;
+    const key = document.getElementById("key").value.trim();
+    const msg = document.getElementById("message").value;
+
+    let result = "";
+
+    if (cipher === "caesar") {
+      if (!key || isNaN(key)) return alert("Enter a number for Caesar Cipher.");
+      result = caesarDecrypt(msg, key);
+    } else if (cipher === "polyalphabetic") {
+      if (!key.match(/[a-zA-Z]+/)) return alert("Enter a word key for Polyalphabetic Cipher.");
+      result = polyDecrypt(msg, key);
+    } else if (cipher === "aes_rsa") {
+      result = aesRsaDecrypt(msg);
+    }
+
+    document.getElementById("message").value = result;
+  }
+</script>
+
+</body>
+</html>
